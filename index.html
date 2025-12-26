@@ -191,17 +191,27 @@
 
             .download-btn {
                 display: inline-block;
-                background-color: var(--primary-color);
+                background-image: linear-gradient(90deg, #FFD54F 0%, #FF8A00 55%, #FF3B30 100%);
                 color: #fff;
                 padding: 6px 10px;
                 border-radius: 6px;
                 text-decoration: none;
                 font-size: 0.9em;
-                border: 1px solid rgba(0, 0, 0, 0.04);
+                border: 2px solid #FFD54F;
+                /* 黄色边框 */
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+                transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
             }
 
             .download-btn:hover {
-                background-color: #3b7fc9;
+                transform: translateY(-2px);
+                filter: brightness(0.98);
+                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+            }
+
+            .download-btn:focus {
+                outline: 3px solid rgba(255, 213, 79, 0.25);
+                outline-offset: 2px;
             }
 
             .n8n-info a {
@@ -359,7 +369,7 @@
                         </ul>
                         <div class="meta">可配置数据源、发布时间与模板，使用 <a href="https://n8n.io" target="_blank" rel="noopener">n8n</a> 管理并部署工作流。</div>
                         <div class="actions">
-                            <a class="download-btn" href="https://raw.githubusercontent.com/Yanel85/Daily-Tech-Digest/refs/heads/main/RSS%E7%A7%91%E6%8A%80%E6%97%A5%E6%8A%A5%E8%87%AA%E5%8A%A8%E5%8F%91%E5%B8%83%E5%88%B0GitHub%20page.json" download="n8n-workflow.json" aria-label="下载 n8n 工作流">下载 n8n 工作流</a>
+                            <a class="download-btn" href="https://github.com/Yanel85/Daily-Tech-Digest/raw/refs/heads/main/RSS%E7%A7%91%E6%8A%80%E6%97%A5%E6%8A%A5%E8%87%AA%E5%8A%A8%E5%8F%91%E5%B8%83%E5%88%B0GitHub%20page.json" download="n8n-workflow.json" aria-label="下载 n8n 工作流">下载n8n工作流</a>
                         </div>
                     </div>
                 </div>
