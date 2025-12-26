@@ -94,7 +94,7 @@
 
             .day.today {
                 border: 1px solid var(--primary-color);
-                color: var(--primary-color);
+                color: #ea4c89;
             }
 
             .day.empty {
@@ -135,26 +135,31 @@
                 padding: 0 0;
                 border-right: none;
                 overflow: hidden;
+                pointer-events: none;
+                /* avoid overlaying reveal tab when off-screen */
             }
 
             .reveal-tab {
-                position: absolute;
-                left: 0;
+                position: fixed;
+                /* fixed to ensure it's always clickable above iframe */
+                left: 8px;
                 top: 50%;
                 transform: translateY(-50%);
-                z-index: 40;
+                z-index: 9999;
+                /* very high to be above iframe */
                 border: 1px solid #ddd;
                 background: white;
-                width: 34px;
-                height: 56px;
+                width: 40px;
+                height: 48px;
                 display: none;
                 align-items: center;
                 justify-content: center;
                 padding: 0;
-                border-radius: 0 6px 6px 0;
+                border-radius: 0 8px 8px 0;
                 cursor: pointer;
-                box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
+                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.12);
                 font-size: 18px;
+                -webkit-tap-highlight-color: transparent;
             }
 
             .reveal-tab.visible {
@@ -167,6 +172,13 @@
 
             .reveal-tab:focus {
                 outline: 2px solid var(--primary-color);
+            }
+
+            /* ensure reveal tab is not obstructed on small screens */
+            @media (max-width: 700px) {
+                .reveal-tab {
+                    left: 8px;
+                }
             }
 
             .toast {
@@ -203,7 +215,7 @@
 
         <div class="main-container">
             <!-- 左侧日历 -->
-            <div class="sidebar" id="sidebar">
+            <div class="sidebar" id="sidebar" tabindex="-1">
                 <div class="calendar-header">
                     <button class="btn" onclick="changeMonth(-1)">&lt;</button>
                     <div class="current-month-display" id="monthDisplay"></div>
@@ -224,11 +236,6 @@
                     <div class="weekday">六</div>
                     <!-- 日期将由JS生成 -->
                 </div>
-
-                <div style="margin-top: 20px; font-size: 0.8em; color: #666;">
-                    <p>提示：点击日期查看对应内容</p>
-                    <p id="currentPathDisplay"></p>
-                </div>
             </div>
 
             <!-- 右侧显示区域 -->
@@ -246,7 +253,7 @@
             const monthDisplay = document.getElementById('monthDisplay');
             const calendarGrid = document.getElementById('calendarGrid');
             const contentFrame = document.getElementById('content-frame');
-            const currentPathDisplay = document.getElementById('currentPathDisplay');
+
 
             // 初始化日历
             function initCalendar() {
@@ -311,7 +318,6 @@
 
                 // 更新 iframe 地址
                 contentFrame.src = path;
-                currentPathDisplay.innerText = `当前路径: ${path}`;
 
                 // 错误处理 (当文件不存在时)
                 contentFrame.onerror = function () {
@@ -363,7 +369,9 @@
             }
 
             if (revealTab) {
-                revealTab.addEventListener('click', () => { toggleSidebar(false); userToggled = true; });
+                // 点击/触摸展开
+                revealTab.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleSidebar(false); userToggled = true; if (sidebar) sidebar.focus(); });
+                revealTab.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); toggleSidebar(false); userToggled = true; if (sidebar) sidebar.focus(); }, { passive: false });
 
                 // 鼠标悬停时临时展开（仅在原本折叠的情况下）
                 revealTab.addEventListener('mouseenter', () => {
