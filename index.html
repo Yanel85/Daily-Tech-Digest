@@ -373,19 +373,6 @@
                 revealTab.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleSidebar(false); userToggled = true; if (sidebar) sidebar.focus(); });
                 revealTab.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); toggleSidebar(false); userToggled = true; if (sidebar) sidebar.focus(); }, { passive: false });
 
-                // 鼠标悬停时临时展开（仅在原本折叠的情况下）
-                revealTab.addEventListener('mouseenter', () => {
-                    if (sidebar.classList.contains('collapsed')) {
-                        tempExpandedByHover = true;
-                        toggleSidebar(false);
-                    }
-                });
-                revealTab.addEventListener('mouseleave', () => {
-                    if (tempExpandedByHover) {
-                        toggleSidebar(true);
-                        tempExpandedByHover = false;
-                    }
-                });
 
                 // 键盘支持（Enter/Space 激活）
                 revealTab.addEventListener('keydown', (e) => {
