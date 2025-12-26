@@ -118,6 +118,32 @@
                 font-size: 1.1em;
             }
 
+            /* 隐藏按钮置于日历下方，样式保持低调 */
+            .hide-action {
+                margin-top: 12px;
+                display: flex;
+                justify-content: center;
+            }
+
+            .hide-btn {
+                background: transparent;
+                border: none;
+                color: #666;
+                padding: 6px 10px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.95em;
+            }
+
+            .hide-btn:hover {
+                background-color: #f5f8f8;
+                color: var(--primary-color);
+            }
+
+            .hide-btn:focus {
+                outline: 2px solid rgba(74, 144, 226, 0.2);
+            }
+
             /* 隐藏/显示侧边栏样式 */
             .toggle-btn {
                 padding: 5px 8px;
@@ -221,7 +247,6 @@
                     <div class="current-month-display" id="monthDisplay"></div>
                     <div style="display:flex; gap:8px; align-items:center;">
                         <button class="btn" onclick="changeMonth(1)">&gt;</button>
-                        <button class="btn toggle-btn" id="toggleSidebarBtn" onclick="toggleSidebar()" title="切换侧边栏" aria-controls="sidebar" aria-expanded="true" aria-label="切换侧边栏">‹</button>
                     </div>
                 </div>
 
@@ -236,6 +261,11 @@
                     <div class="weekday">六</div>
                     <!-- 日期将由JS生成 -->
                 </div>
+
+                <div class="hide-action">
+                    <button id="toggleSidebarBtn" class="hide-btn" onclick="toggleSidebar()" title="隐藏侧边栏" aria-controls="sidebar" aria-expanded="true" aria-label="隐藏侧边栏">隐藏侧边</button>
+                </div>
+
             </div>
 
             <!-- 右侧显示区域 -->
@@ -253,6 +283,7 @@
             const monthDisplay = document.getElementById('monthDisplay');
             const calendarGrid = document.getElementById('calendarGrid');
             const contentFrame = document.getElementById('content-frame');
+            const currentPathDisplay = document.getElementById('currentPathDisplay');
 
 
             // 初始化日历
@@ -319,6 +350,7 @@
                 // 更新 iframe 地址
                 contentFrame.src = path;
 
+
                 // 错误处理 (当文件不存在时)
                 contentFrame.onerror = function () {
                     console.error("无法加载页面: " + path);
@@ -341,8 +373,9 @@
 
             function setToggleButtonLabel(expanded) {
                 if (!toggleBtn) return;
-                toggleBtn.innerText = expanded ? '‹' : '›';
+                toggleBtn.innerText = expanded ? '隐藏侧边' : '显示侧边';
                 toggleBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                toggleBtn.setAttribute('title', expanded ? '点击隐藏侧边栏' : '点击显示侧边栏');
             }
 
             // 切换侧边栏：true = 折叠, false = 展开
