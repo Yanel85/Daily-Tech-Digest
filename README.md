@@ -16,3 +16,8 @@
 	•	查看历史：点击导航栏日期选择器
 	•	原始数据：查看仓库/archive目录
 	•	修改模板：编辑提示词模版
+🤝 参与贡献
+
+欢迎提交Pull Request：
+	1.	新增RSS源：修改feeds.json
+	2.	优化AI提示词：改进prompt.md
