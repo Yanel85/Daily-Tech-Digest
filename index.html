@@ -169,6 +169,10 @@
                 margin-bottom: 6px;
             }
 
+            .n8n-info .content {
+                min-width: 0;
+            }
+
             .n8n-info ul {
                 margin: 0;
                 padding-left: 18px;
@@ -179,6 +183,25 @@
                 margin-top: 8px;
                 font-size: 0.85em;
                 color: #666;
+            }
+
+            .n8n-info .actions {
+                margin-top: 10px;
+            }
+
+            .download-btn {
+                display: inline-block;
+                background-color: var(--primary-color);
+                color: #fff;
+                padding: 6px 10px;
+                border-radius: 6px;
+                text-decoration: none;
+                font-size: 0.9em;
+                border: 1px solid rgba(0, 0, 0, 0.04);
+            }
+
+            .download-btn:hover {
+                background-color: #3b7fc9;
             }
 
             .n8n-info a {
@@ -328,13 +351,16 @@
                 <div class="n8n-info" role="region" aria-label="n8n 项目简介">
                     <div class="icon" aria-hidden="true">🤖</div>
                     <div class="content">
-                        <div class="title">n8n 自动发布</div>
+                        <div class="title">RSS科技日报自动发布到GitHub</div>
                         <ul>
-                            <li>每日定时抓取 RSS 源</li>
-                            <li>由 AI 生成并渲染 HTML 页面（可自定义模板）</li>
-                            <li>自动推送生成的静态页面到 GitHub</li>
+                            <li>定时抓取 RSS 并汇总生成内容</li>
+                            <li>使用 AI 渲染为静态 HTML 页面</li>
+                            <li>自动推送至 GitHub 发布</li>
                         </ul>
-                        <div class="meta">可配置源、发布时间与模板。使用 <a href="https://n8n.io" target="_blank" rel="noopener">n8n</a> 管理工作流，支持自托管或云端运行。</div>
+                        <div class="meta">可配置数据源、发布时间与模板，使用 <a href="https://n8n.io" target="_blank" rel="noopener">n8n</a> 管理并部署工作流。</div>
+                        <div class="actions">
+                            <a class="download-btn" href="https://raw.githubusercontent.com/Yanel85/Daily-Tech-Digest/refs/heads/main/RSS%E7%A7%91%E6%8A%80%E6%97%A5%E6%8A%A5%E8%87%AA%E5%8A%A8%E5%8F%91%E5%B8%83%E5%88%B0GitHub%20page.json" download="n8n-workflow.json" aria-label="下载 n8n 工作流">下载 n8n 工作流</a>
+                        </div>
                     </div>
                 </div>
 
