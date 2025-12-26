@@ -126,11 +126,10 @@
             }
 
             .hide-btn {
-                background: transparent;
                 border: none;
                 color: #666;
-                padding: 6px 10px;
-                border-radius: 6px;
+                padding: 6px 30px;
+                border-radius: 18px;
                 cursor: pointer;
                 font-size: 0.95em;
             }
@@ -142,6 +141,61 @@
 
             .hide-btn:focus {
                 outline: 2px solid rgba(74, 144, 226, 0.2);
+            }
+
+            /* n8n 项目简介（样式优化） */
+            .n8n-info {
+                background-color: #fbfcfc;
+                border: 1px solid #e6e7e8;
+                color: #2b2b2b;
+                padding: 12px;
+                margin-top: 12px;
+                border-radius: 8px;
+                font-size: 0.92em;
+                line-height: 1.4;
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .n8n-info .icon {
+                font-size: 1.3em;
+                line-height: 1;
+                margin-top: 2px;
+            }
+
+            .n8n-info .title {
+                font-weight: 600;
+                margin-bottom: 6px;
+            }
+
+            .n8n-info ul {
+                margin: 0;
+                padding-left: 18px;
+                color: #555;
+            }
+
+            .n8n-info .meta {
+                margin-top: 8px;
+                font-size: 0.85em;
+                color: #666;
+            }
+
+            .n8n-info a {
+                color: var(--primary-color);
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+            .n8n-info a:hover {
+                text-decoration: underline;
+            }
+
+            /* 小屏幕隐藏信息卡以避免拥挤 */
+            @media (max-width: 700px) {
+                .n8n-info {
+                    display: none;
+                }
             }
 
             /* 隐藏/显示侧边栏样式 */
@@ -165,6 +219,11 @@
                 /* avoid overlaying reveal tab when off-screen */
             }
 
+            /* 隐藏侧边栏时同时隐藏 n8n 信息块 */
+            .sidebar.collapsed .n8n-info {
+                display: none;
+            }
+
             .reveal-tab {
                 position: fixed;
                 /* fixed to ensure it's always clickable above iframe */
@@ -174,8 +233,8 @@
                 z-index: 9999;
                 /* very high to be above iframe */
                 border: 1px solid #ddd;
-                background: white;
-                width: 40px;
+                background: #cdcbcb;
+                width: 28px;
                 height: 48px;
                 display: none;
                 align-items: center;
@@ -264,6 +323,19 @@
 
                 <div class="hide-action">
                     <button id="toggleSidebarBtn" class="hide-btn" onclick="toggleSidebar()" title="隐藏侧边栏" aria-controls="sidebar" aria-expanded="true" aria-label="隐藏侧边栏">隐藏侧边</button>
+                </div>
+
+                <div class="n8n-info" role="region" aria-label="n8n 项目简介">
+                    <div class="icon" aria-hidden="true">🤖</div>
+                    <div class="content">
+                        <div class="title">n8n 自动发布</div>
+                        <ul>
+                            <li>每日定时抓取 RSS 源</li>
+                            <li>由 AI 生成并渲染 HTML 页面（可自定义模板）</li>
+                            <li>自动推送生成的静态页面到 GitHub</li>
+                        </ul>
+                        <div class="meta">可配置源、发布时间与模板。使用 <a href="https://n8n.io" target="_blank" rel="noopener">n8n</a> 管理工作流，支持自托管或云端运行。</div>
+                    </div>
                 </div>
 
             </div>
