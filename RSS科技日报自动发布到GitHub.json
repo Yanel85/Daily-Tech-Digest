@@ -1,0 +1,1002 @@
+{
+  "name": "RSS科技日报自动发布到GitHub",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"url\" :  \n  [\n\"https://www.techradar.com/feeds.xml\",\n\"https://www.theverge.com/rss/index.xml\",\n\"https://www.qbitai.com/feed\"\n]\n}",
+        "options": {}
+      },
+      "id": "166adfa3-0de0-4689-9438-61ac11d1cec9",
+      "name": "Tech News Sites",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -816,
+        -288
+      ],
+      "typeVersion": 3.4,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"Url\": [ \n    \"https://rsshub.yanel.me/github/issue/ruanyf/weekly/open\",\n    \"http://hnrss.org/show\",\n    \"https://meta.appinn.net/c/faxian/10.rss\",\n    \"http://feed.appinn.com/\",\n    \"https://www.reddit.com/r/SideProject/.rss\",\n    \"https://www.reddit.com/r/InternetIsBeautiful/.rss\",\n    \"https://dev.to/feed/tag/tools\"\n  ]\n}",
+        "options": {}
+      },
+      "id": "cf43aef3-5852-4987-a669-00a41c338beb",
+      "name": "Tools Subredit and Sites",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -816,
+        96
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "url",
+        "options": {}
+      },
+      "id": "76717907-4ad8-4e08-beed-e736f8acc209",
+      "name": "Split Out",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        -560,
+        -288
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "Url",
+        "options": {}
+      },
+      "id": "e1dd988e-f7d0-46c3-8188-92864194974d",
+      "name": "Split Out1",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        -560,
+        96
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b410096f-e5fe-4a98-a11f-0d61eaa7b018",
+      "name": "Loop Over Items1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        -304,
+        96
+      ],
+      "typeVersion": 3,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Loop Over Items2').item.json.url }}",
+        "options": {}
+      },
+      "id": "e39e496e-066f-45af-803f-489a1551e62f",
+      "name": "RSS Read OF Tech News",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        -32,
+        -272
+      ],
+      "typeVersion": 1.2,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.Url }}",
+        "options": {}
+      },
+      "id": "36e85c7a-8ef7-4c9e-8204-fd220bb421a4",
+      "name": "RSS Read OF Tools",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        -96,
+        224
+      ],
+      "typeVersion": 1.2,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "executeOnce": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "026a59a9-8ee9-43c6-a734-49e8d997415e",
+      "name": "Conver To CSV",
+      "type": "n8n-nodes-base.convertToFile",
+      "position": [
+        -576,
+        480
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "inputType": "binary"
+      },
+      "id": "bb601539-f786-4e98-bb1a-3d231dc45d40",
+      "name": "Upload a file",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "position": [
+        -384,
+        480
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "w2L4UwTIuixM19xN",
+          "name": "Google Gemini(PaLM) Api Merry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "# Tech Content Writer Prompt\n\nYou are a tech content writer.\nI have two lists of items:\n1️⃣ New Tools & Products\n{products_list}\n2️⃣ Global & China Tech News\n{news_list}\n\n## Task:\n- Select the **top 20-80 items** from each list based on these interests and keywords:\n  - **Tools & Products Keywords:** [\"算法\", \"Agent\", \"LLM\", \"后端\", \"JavaScript\", \"Java\", \n  \"AI编程\", \"前端\", \"C#\", \"前端框架\", \"React.js\", \"架构\", \n  \"NPM\", \"面试\", \"CSS\", \"Vue.js\", \"C++\", \n  \"cybersecurity\", \"security\", \"tools\", \"design\", \"webdesign\", \"app\", \n  \"sidehustle\", \"portfolio\", \n  \"AI\", \"automation\", \"developer\", \"open source\", \"productivity\", \n  \"开发者\", \"creative\", \"innovation\", \"API\", \"web app\", \"工具\", \"开源\", \n  \"自动化工具\", \"开发者平台\", \"开源技术\", \"生产力应用\", \"创新解决方案\", \n  \"API集成\", \"Web应用开发\", \"智能协作工具\", \"机器学习框架\", \"创意设计工具\", \n  \"代码生成器\", \"数据分析\", \"AI\", \"高效能引擎\", \"智能助手\", \n  \"自动化脚本\", \"开源社区\", \"开发者生态\",  \"创新实验室\"]\n\n  - **News Keywords:** [\"自动驾驶\", \"AIGC\", \"Venture\", \"Layoffs\", \"Transportation\", \n  \"avs\", \"Apps\", \"Apple\", \"iPhone\", \"Security\", \n  \"Google\", \"AI\", \"Social\", \"algorithms\", \"Climate\", \"Microsoft\", \"biofuels\", \n  \"Automotive\", \"AI policy\", \"data breach\", \"OpenAI\", \n  \"Generative AI\", \"Exclusive\", \"electric vehicles\", \"发现频道\",\n  \"technology innovation\", \"AI breakthrough\", \"framework\", \"developer update\", \n  \"research\", \"automation trend\", \"product launch\", \"技术创新\", \"人工智能突破\", \n  \"开发框架\", \"开发者动态\", \"技术研究\", \"自动化趋势\", \"人工智能\",\"产品发布\"]\n\n- Keep **two separate sections**: \n  1. Tools & Products (5-20 items)\n  2. Global & China Tech Innovations (10-40 items)\n- Summarize each item in **2-4 lines**.\n- Translate English into Chinese.\n- **If a picture URL is provided**, please display it beautifully below the title, with rounded corners and cropped to a 4:3 aspect ratio.News list do not display images.\n- Tone: \"Curious, energetic, and concise – focused on discovery, usefulness, and creativity.\"\n- Format using the HTML template below, replacing placeholder items with actual content from the lists.\n\n## HTML Template:\n```html\n<!DOCTYPE html>\n<html lang=\"zh-cn\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Daily Tech Digest-{current_date}</title><script src=\"https://cdn.tailwindcss.com\"></script>\n</head>\n    <body class=\"font-sans bg-[#f5f5f5] m-0 p-4 leading-relaxed text-[15px] text-[#333333]\">\n        <div class=\"max-w-[1000px] mx-auto bg-white rounded-lg\">\n            <div class=\"bg-blue-800 text-white p-5 rounded-t-lg\">\n                <h1 class=\"text-[20px] font-semibold mb-1\">⚡ Daily Tech Digest</h1>\n                <p class=\"text-[13px] opacity-80 m-0\">{current_date}</p>\n            </div>\n            <div class=\"px-4 py-5\">\n                <!-- Tools & Products Section -->\n                <div class=\"mb-8 last:mb-0\">\n                    <h2 class=\"text-[16px] font-semibold text-black mb-4 pb-2 border-b-2 border-black\">🧠 New Tools & Products</h2>\n                    <!-- Example with Image -->\n                    <div class=\"flex gap-3 items-start mb-5 pb-5 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0\">\n                        <!-- Include image if URL is available -->\n                        <img src=\"{image_url}\" alt=\"{Product Title}\" class=\"w-[150px] rounded-xl object-cover flex-shrink-0\" onerror=\"this.style.display='none'\">\n                        <div class=\"flex-1\">\n                            <div class=\"text-[15px] font-semibold text-black mb-3\">{Product Title 1}</div>\n                            <div class=\"text-[14px] text-gray-600 mb-2\">\n                                {2-3 line summary of the product}\n                            </div>\n                            <a href=\"{product_link}\" class=\"read-more text-blue-600 text-sm font-medium no-underline hover:underline\" target=\"_blank\">Read more →</a>\n                        </div>\n                    </div>\n                    <!-- Example without Image -->\n                    <div class=\"flex gap-3 items-start mb-5 pb-5 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0\">\n                        <div class=\"flex-1\">\n                            <div class=\"text-[15px] font-semibold text-black mb-3\">{Product Title 2}</div>\n                            <div class=\"text-[14px] text-gray-600 mb-2\">\n                                {2-3 line summary of the product}\n                            </div>\n                            <a href=\"{product_link}\" class=\"read-more text-blue-600 text-sm font-medium no-underline hover:underline\" target=\"_blank\">Read more →</a>\n                        </div>\n                    </div>\n                    <!-- Add more items as needed -->\n                </div>\n                <!-- Global & China Tech News Section without Image-->\n                <div class=\"mb-8 last:mb-0\">\n                    <h2 class=\"text-[16px] font-semibold text-black mb-4 pb-2 border-b-2 border-black\">🌍 Global & China Tech Innovations</h2>\n                    <div class=\"flex gap-3 items-start mb-5 pb-5 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0\">\n                        <div class=\"flex-1\">\n                            <div class=\"text-[15px] font-semibold text-black mb-3\">{News Title 1}</div>\n                            <div class=\"text-[14px] text-gray-600 mb-2\">\n                                {3-5 line summary of the news}\n                            </div>\n                            <a href=\"{news_link}\" class=\"read-more text-blue-600 text-sm font-medium no-underline hover:underline\" target=\"_blank\">Read more →</a>\n                        </div>\n                    </div>\n                    <!-- Add more items as needed -->\n                </div>\n            </div>\n            <div class=\"bg-gray-50 p-4 text-center text-[12px] text-gray-500 rounded-b-lg\">\n                Stay curious. Keep building.\n            </div>\n        </div>\n    </body>\n</html>\n",
+        "documentUrls": "={{ $json.fileUri }}",
+        "options": {}
+      },
+      "id": "b87287fe-6a4a-42ea-b46c-708626c1f594",
+      "name": "Analyze document",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "position": [
+        -160,
+        480
+      ],
+      "typeVersion": 1,
+      "notesInFlow": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "w2L4UwTIuixM19xN",
+          "name": "Google Gemini(PaLM) Api Merry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the HTML from previous node\nlet htmlText = $input.first().json.content.parts[0].text\n// Remove all \\n characters and trim\nhtmlText = htmlText.replace(/\\n/g, \"\").trim();\nhtmlText = htmlText.replace(/^[\\s\\S]*?```html/, '').trim();\n// Return as JSON\nreturn [{ json: { html: htmlText } }];\n"
+      },
+      "id": "2b80cc6a-f54a-4e63-863b-967d4c6c4713",
+      "name": "Code in JavaScript",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        80,
+        480
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "487901be-c3af-4763-a209-82a9c6b8431a",
+              "leftValue": "={{ $json.isoDate }}",
+              "rightValue": "={{ $now.minus(15, 'hour') }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        400,
+        -272
+      ],
+      "id": "05b78f0d-579d-41ed-9708-286b13590238",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f2f7a306-afb3-4779-993f-23282f83f385",
+              "leftValue": "={{ $json.isoDate }}",
+              "rightValue": "={{ $now.minus(15, 'hour') }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        304,
+        224
+      ],
+      "id": "45bf31d4-cd16-44ea-83d1-aff97b134db1",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "fromEmail": "yenmerry19@gmail.com",
+        "toEmail": "fount.yan@gmail.com",
+        "subject": "=⚡ Daily Tech Digest - {{ new Date().toLocaleDateString(\"zh-cn\", { year: \"numeric\", month: \"numeric\", day: \"numeric\" }) }}\n",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "7b76a7ea-559c-45bf-956f-38334392ca7a",
+      "name": "Send email",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        384,
+        784
+      ],
+      "webhookId": "fffe1601-8a61-4fe4-a99b-378f2fa68628",
+      "typeVersion": 2.1,
+      "credentials": {
+        "smtp": {
+          "id": "c7zIv0pAxMBFL2CK",
+          "name": "SMTP account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "https://github.com/aaaa/",
+          "mode": "url"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "https://github.com/aaaa/Daily-Tech-Digest",
+          "mode": "url"
+        },
+        "filePath": "={{ new Date().toLocaleDateString(\"zh-cn\", { year: \"numeric\", month: \"numeric\", day: \"numeric\" }) }}.html",
+        "fileContent": "={{ $json.html }}",
+        "commitMessage": "={{ new Date().toLocaleDateString(\"zh-cn\", { year: \"numeric\", month: \"numeric\", day: \"numeric\" }) }}"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        480
+      ],
+      "id": "0df4ceb7-dce3-42ef-92e9-8ef66c7dda7e",
+      "name": "Create a file",
+      "webhookId": "a46de66b-b31f-4274-bc14-cb36879f0e30",
+      "retryOnFail": false,
+      "notesInFlow": true,
+      "credentials": {
+        "githubApi": {
+          "id": "eZU0UO4TR6WhkrWd",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "WIQk93cQKj4N9JYd",
+          "mode": "list",
+          "cachedResultName": "tech",
+          "cachedResultUrl": "/projects/ERXnERGukfwVyWvk/datatables/WIQk93cQKj4N9JYd"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "isoDate",
+              "condition": "gte",
+              "keyValue": "={{ $now.minus(25, 'hour') }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        480
+      ],
+      "id": "c116df58-a54f-4a6c-9e02-16dbff25599d",
+      "name": "Get row(s)",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "WIQk93cQKj4N9JYd",
+          "mode": "list",
+          "cachedResultName": "tech",
+          "cachedResultUrl": "/projects/ERXnERGukfwVyWvk/datatables/WIQk93cQKj4N9JYd"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "isoDate",
+              "condition": "lte",
+              "keyValue": "={{ $now.minus(16, 'hour') }}"
+            }
+          ]
+        },
+        "options": {
+          "dryRun": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        320
+      ],
+      "id": "bfc9f48a-d87f-4aa6-96bf-cf3df0afcc5d",
+      "name": "Delete row(s)"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 */8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "5d13ac8f-c32c-4651-acec-96b515125052",
+      "name": "自动获取",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -1104,
+        -128
+      ],
+      "typeVersion": 1.2,
+      "executeOnce": false,
+      "retryOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1120,
+        320
+      ],
+      "id": "5a986c40-5ca0-4513-aebb-d64e67ccafbd",
+      "name": "自动删除",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1120,
+        480
+      ],
+      "id": "e368a2d6-dd63-4b51-86e2-9b30dbe97c92",
+      "name": "自动发布",
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "maxItems": 120
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        112,
+        224
+      ],
+      "id": "e90264dd-1d0a-4bcd-b1c6-54cdb418ffc8",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "maxItems": 120
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -272
+      ],
+      "id": "91f1c55e-48e2-4fe9-8d24-e8775148460b",
+      "name": "Limit1"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "delete",
+        "owner": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://github.com/Yanel85",
+          "__regex": "https:\\/\\/(?:[^/]+)\\/([-_0-9a-zA-Z]+)"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://github.com/Yanel85/Daily-Tech-Digest",
+          "__regex": "https:\\/\\/(?:[^/]+)\\/(?:[-_0-9a-zA-Z]+)\\/([-_.0-9a-zA-Z]+)"
+        },
+        "filePath": "={{ new Date().toLocaleDateString(\"zh-cn\", { year: \"numeric\", month: \"numeric\", day: \"numeric\" }) }}.html",
+        "commitMessage": "=del  {{ new Date().toLocaleDateString(\"zh-cn\", { year: \"numeric\", month: \"numeric\", day: \"numeric\" }) }}.html"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        -912,
+        800
+      ],
+      "id": "1fc12357-3982-4c68-8124-51556abb52e3",
+      "name": "Delete a file",
+      "webhookId": "25798512-50f1-4950-8d2a-02d6277de7b5",
+      "credentials": {
+        "githubApi": {
+          "id": "eZU0UO4TR6WhkrWd",
+          "name": "GitHub"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        0,
+        -32
+      ],
+      "id": "215bc3e0-e0e8-4a81-afa3-f8408aa504e0",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        512,
+        224
+      ],
+      "id": "d1d1dcb4-1fc9-4a02-b140-055c7041524d",
+      "name": "DeepSeek Chat Model1",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "z7QH2HQUBf0iUEwp",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=从以下内容中提取2-6个关键词：{{ $json.contentSnippet }}，关键词尽量简短，是互联网常见的关键词，以逗号分隔输出",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        512,
+        -32
+      ],
+      "id": "9721fdac-30d3-42c1-8643-90bc46e255ec",
+      "name": "keyword"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "WIQk93cQKj4N9JYd",
+          "mode": "list",
+          "cachedResultName": "tech",
+          "cachedResultUrl": "/projects/ERXnERGukfwVyWvk/datatables/WIQk93cQKj4N9JYd"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{ $('noexit').item.json.title }}",
+            "link": "={{ $('noexit').item.json.link }}",
+            "isoDate": "={{ $('noexit').item.json.isoDate }}",
+            "content": "={{ $('noexit').item.json.content}}",
+            "keywords": "={{ $('keyword').item.json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "isoDate",
+              "displayName": "isoDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "keywords",
+              "displayName": "keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        832,
+        -32
+      ],
+      "id": "82ff52b5-35e2-4c86-8035-8a80d2a20447",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "b28b340a-c37f-4502-9175-ae8212e5b866",
+      "name": "Loop Over Items2",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        -304,
+        -288
+      ],
+      "typeVersion": 3,
+      "retryOnFail": false,
+      "maxTries": 2,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "WIQk93cQKj4N9JYd",
+          "mode": "list",
+          "cachedResultName": "tech",
+          "cachedResultUrl": "/projects/ERXnERGukfwVyWvk/datatables/WIQk93cQKj4N9JYd"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "title",
+              "keyValue": "={{ $('Merge').item.json.title }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        272,
+        -32
+      ],
+      "id": "c6ee842b-b9e0-40b6-8269-9e95b9256801",
+      "name": "noexit"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conver To CSV": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file": {
+      "main": [
+        [
+          {
+            "node": "Analyze document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tech News Sites": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze document": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "RSS Read OF Tools",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read OF Tools": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read OF Tech News": {
+      "main": [
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tools Subredit and Sites": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Conver To CSV",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "自动获取": {
+      "main": [
+        [
+          {
+            "node": "Tech News Sites",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Tools Subredit and Sites",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "自动删除": {
+      "main": [
+        [
+          {
+            "node": "Delete row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "自动发布": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a file": {
+      "main": [
+        []
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "noexit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "keyword",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "keyword": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RSS Read OF Tech News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "noexit": {
+      "main": [
+        [
+          {
+            "node": "keyword",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Shanghai",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 300,
+    "availableInMCP": false,
+    "errorWorkflow": "QPjgujWvDc4Jm1AU"
+  },
+  "versionId": "4fd94417-ae8c-4d6f-aedc-d86080b93865",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f2169b9c5e0934f3c0a18762e1771dcd6f95fb125c7cff268b5ea2c0dfbd87af"
+  },
+  "id": "ljGR4TETCmhvFFMd",
+  "tags": []
+}
