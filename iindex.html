@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>日记/工作流首页</title>
+        <style>
+            :root {
+                --sidebar-width: 350px;
+                --primary-color: #4a90e2;
+                --bg-color: #f4f7f6;
+            }
+
+            body,
+            html {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                overflow: hidden;
+            }
+
+            .main-container {
+                display: flex;
+                height: 100vh;
+            }
+
+            /* 左侧日历栏 */
+            .sidebar {
+                width: var(--sidebar-width);
+                background-color: white;
+                border-right: 1px solid #ddd;
+                display: flex;
+                flex-direction: column;
+                padding: 20px;
+                box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+                z-index: 10;
+            }
+
+            /* 右侧内容区 */
+            .content-area {
+                flex: 1;
+                background-color: var(--bg-color);
+                position: relative;
+            }
+
+            #content-frame {
+                width: 100%;
+                height: 100%;
+                border: none;
+                display: block;
+            }
+
+            /* 日历样式 */
+            .calendar-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+
+            .calendar-grid {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 5px;
+                text-align: center;
+            }
+
+            .weekday {
+                font-weight: bold;
+                color: #999;
+                font-size: 0.8em;
+                padding-bottom: 10px;
+            }
+
+            .day {
+                padding: 10px 0;
+                cursor: pointer;
+                border-radius: 4px;
+                transition: all 0.2s;
+                font-size: 0.9em;
+            }
+
+            .day:hover {
+                background-color: #e1f0ff;
+            }
+
+            .day.active {
+                background-color: var(--primary-color) !important;
+                color: white;
+                font-weight: bold;
+            }
+
+            .day.today {
+                border: 1px solid var(--primary-color);
+                color: var(--primary-color);
+            }
+
+            .day.empty {
+                cursor: default;
+            }
+
+            .btn {
+                background: none;
+                border: 1px solid #ddd;
+                padding: 5px 10px;
+                cursor: pointer;
+                border-radius: 4px;
+            }
+
+            .btn:hover {
+                background-color: #f0f0f0;
+            }
+
+            .current-month-display {
+                font-weight: bold;
+                font-size: 1.1em;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <div class="main-container">
+            <!-- 左侧日历 -->
+            <div class="sidebar">
+                <div class="calendar-header">
+                    <button class="btn" onclick="changeMonth(-1)">&lt;</button>
+                    <div class="current-month-display" id="monthDisplay"></div>
+                    <button class="btn" onclick="changeMonth(1)">&gt;</button>
+                </div>
+
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- 星期表头 -->
+                    <div class="weekday">日</div>
+                    <div class="weekday">一</div>
+                    <div class="weekday">二</div>
+                    <div class="weekday">三</div>
+                    <div class="weekday">四</div>
+                    <div class="weekday">五</div>
+                    <div class="weekday">六</div>
+                    <!-- 日期将由JS生成 -->
+                </div>
+
+                <div style="margin-top: 20px; font-size: 0.8em; color: #666;">
+                    <p>提示：点击日期查看对应内容</p>
+                    <p id="currentPathDisplay"></p>
+                </div>
+            </div>
+
+            <!-- 右侧显示区域 -->
+            <div class="content-area">
+                <iframe id="content-frame" name="content-frame" src=""></iframe>
+            </div>
+        </div>
+
+        <script>
+            let currentDate = new Date(); // 当前显示的月份
+            const today = new Date();     // 今天的实际日期
+
+            const monthDisplay = document.getElementById('monthDisplay');
+            const calendarGrid = document.getElementById('calendarGrid');
+            const contentFrame = document.getElementById('content-frame');
+            const currentPathDisplay = document.getElementById('currentPathDisplay');
+
+            // 初始化日历
+            function initCalendar() {
+                renderCalendar();
+                // 默认加载今天的页面
+                loadPage(today.getFullYear(), today.getMonth() + 1, today.getDate());
+            }
+
+            function renderCalendar() {
+                // 清除旧的日期（保留星期表头）
+                const weekdays = document.querySelectorAll('.weekday');
+                calendarGrid.innerHTML = '';
+                weekdays.forEach(day => calendarGrid.appendChild(day));
+
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+
+                monthDisplay.innerText = `${year}年 ${month + 1}月`;
+
+                // 获取当月第一天是星期几
+                const firstDay = new Date(year, month, 1).getDay();
+                // 获取当月最后一天
+                const lastDate = new Date(year, month + 1, 0).getDate();
+
+                // 填充空白日期
+                for (let i = 0; i < firstDay; i++) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.classList.add('day', 'empty');
+                    calendarGrid.appendChild(emptyDiv);
+                }
+
+                // 填充实际日期
+                for (let i = 1; i <= lastDate; i++) {
+                    const dayDiv = document.createElement('div');
+                    dayDiv.classList.add('day');
+                    dayDiv.innerText = i;
+
+                    // 标记今天
+                    if (year === today.getFullYear() && month === today.getMonth() && i === today.getDate()) {
+                        dayDiv.classList.add('today');
+                    }
+
+                    // 点击事件
+                    dayDiv.onclick = () => {
+                        // 移除其他激活状态
+                        document.querySelectorAll('.day').forEach(d => d.classList.remove('active'));
+                        dayDiv.classList.add('active');
+                        loadPage(year, month + 1, i);
+                    };
+
+                    calendarGrid.appendChild(dayDiv);
+                }
+            }
+
+            function loadPage(year, month, day) {
+                // 格式化日期：月份和日期补零 (例如: 2023/05/09.html)
+                const fMonth = month.toString().padStart(2, '0');
+                const fDay = day.toString().padStart(2, '0');
+
+                // 构造路径
+                const path = `${year}/${fMonth}/${fDay}.html`;
+
+                // 更新 iframe 地址
+                contentFrame.src = path;
+                currentPathDisplay.innerText = `当前路径: ${path}`;
+
+                // 错误处理 (当文件不存在时)
+                contentFrame.onerror = function () {
+                    console.error("无法加载页面: " + path);
+                };
+            }
+
+            function changeMonth(offset) {
+                currentDate.setMonth(currentDate.getMonth() + offset);
+                renderCalendar();
+            }
+
+            // 启动
+            initCalendar();
+        </script>
+
+    </body>
+
+</html>
